@@ -1,6 +1,6 @@
 {
     "name": "@sapliyio/fintech-testing",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "Test utilities for Sapliy Fintech Ecosystem - mock servers, fixtures, and assertions",
     "main": "dist/index.js",
     "module": "dist/index.mjs",
@@ -32,6 +32,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@sapliyio/fintech": "^1.0.0",
         "msw": "^2.2.0"
     },
     "devDependencies": {
