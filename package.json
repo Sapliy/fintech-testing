@@ -1,0 +1,51 @@
+{
+    "name": "@sapliyio/fintech-testing",
+    "version": "1.0.0",
+    "description": "Test utilities for Sapliy Fintech Ecosystem - mock servers, fixtures, and assertions",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        },
+        "./mocks": {
+            "import": "./dist/mocks/index.mjs",
+            "require": "./dist/mocks/index.js",
+            "types": "./dist/mocks/index.d.ts"
+        },
+        "./fixtures": {
+            "import": "./dist/fixtures/index.mjs",
+            "require": "./dist/fixtures/index.js",
+            "types": "./dist/fixtures/index.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "msw": "^2.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "tsup": "^8.0.2",
+        "typescript": "^5.3.3",
+        "vitest": "^1.2.0"
+    },
+    "peerDependencies": {
+        "@sapliyio/fintech-sdk-node": "^1.0.0"
+    },
+    "peerDependenciesMeta": {
+        "@sapliyio/fintech-sdk-node": {
+            "optional": true
+        }
+    }
+}
