@@ -1,38 +1,66 @@
 import { SapliyClient } from "@sapliyio/fintech"
 import { describe, it, expect } from 'vitest';
-// import { SapliyClient } from '@sapliyio/fintech-sdk-node';
-// Note: In this environment, we simulate the SDK interaction
 
+/**
+ * E2E Transaction Flow Test
+ * 
+ * This test validates the entire lifecycle of a transaction across the Sapliy ecosystem.
+ * It uses the @sapliyio/fintech SDK to interact with the gateway and verifies
+ * that events are correctly processed and recorded in the ledger.
+ */
 describe('E2E Transaction Flow', () => {
-    it('successfully processes a payment through the entire ecosystem', async () => {
-        // 1. Initialize Client
-        // const client = new SapliyClient({ apiKey: 'sk_test_123' });
-
-        // 2. Create a Zone
-        // const zone = await client.zones.create({ name: 'E2E Test Zone', mode: 'test' });
-        // expect(zone.id).toBeDefined();
-
-        // 3. Trigger a Payment Event (simulating webhook or SDK trigger)
-        // const event = await client.events.trigger({
-        //     type: 'payment.created',
-        //     zone_id: zone.id,
-        //     data: { amount: 5000, currency: 'USD' }
-        // });
-        // expect(event.id).toBeDefined();
-
-        // 4. Verify Flow Execution (Wait for async processing)
-        // await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // 5. Check Ledger Entry
-        // const ledgerEntries = await client.ledger.list({ zone_id: zone.id });
-        // expect(ledgerEntries.some((e: { amount: number }) => e.amount === 5000)).toBe(true);
-
-        // Final assertion (placeholder for now as real services aren't running)
-        expect(true).toBe(true);
+    // Note: This test assumes the ecosystem services are running (or mocked via MSW)
+    const client = new SapliyClient({
+        apiKey: 'sk_test_51MzS4nLp0Xxyz...',
+        base_url: 'http://localhost:8080'
     });
 
-    it('handles failed payments and triggers associated flows', async () => {
-        // Test logic for failure paths
-        expect(true).toBe(true);
+    it('successfully processes a payment through the entire ecosystem', async () => {
+        // 1. Create a Zone for the transaction
+        const zoneName = `E2E-Test-Zone-${Date.now()}`;
+        const zone = await client.auth.createZone({
+            name: zoneName,
+            mode: 'test'
+        });
+        expect(zone).toBeDefined();
+        const zoneId = (zone as any).id;
+
+        // 2. Trigger a Payment Event
+        // In a real scenario, this might come from an external webhook or SDK call
+        const paymentIntent = await client.payments.createPaymentIntent({
+            amount: 5000,
+            currency: 'usd',
+            zone_id: zoneId,
+            description: 'E2E Test Payment'
+        });
+        expect(paymentIntent).toBeDefined();
+        const intentId = (paymentIntent as any).id;
+
+        // 3. Confirm the Payment
+        const confirmation = await client.payments.confirmPaymentIntent(intentId);
+        expect((confirmation as any).status).toBe('succeeded');
+
+        // 4. Verify Flow Execution (Wait for async processing/Kafka/Workers)
+        // Polling or a fixed wait for demo purposes
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // 5. Check Ledger Entry
+        // Ensure the transaction was recorded in the ledger for this zone
+        const ledgerEntries = await client.ledger.listEntries({ zone_id: zoneId });
+        const entryFound = (ledgerEntries as any[]).some(e => e.amount === 5000 && e.type === 'credit');
+
+        // Final assertion: The ledger should reflect the successful payment
+        expect(entryFound).toBe(true);
+    });
+
+    it('handles unauthorized access appropriately', async () => {
+        const badClient = new SapliyClient({ apiKey: 'invalid_key' });
+        try {
+            await badClient.auth.listZones();
+            // Should not reach here
+            expect(true).toBe(false);
+        } catch (error) {
+            expect(error).toBeDefined();
+        }
     });
 });
