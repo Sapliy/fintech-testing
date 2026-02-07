@@ -56,7 +56,23 @@ describe('E2E Transaction Flow', () => {
         const loginData = await loginRes.json() as any;
         const authToken = loginData.token;
 
-        // 4. Create Zone
+        // 4. Create Organization
+        const orgRes = await fetch('http://localhost:8080/auth/organizations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                name: `E2E Test Org ${Date.now()}`,
+                domain: `e2e-${Date.now()}.com`
+            })
+        });
+        if (!orgRes.ok) throw new Error(`Org creation failed: ${orgRes.statusText}`);
+        const orgData = await orgRes.json() as any;
+        const orgId = orgData.id;
+
+        // 5. Create Zone
         const zoneRes = await fetch('http://localhost:8080/auth/zones', {
             method: 'POST',
             headers: {
@@ -64,6 +80,7 @@ describe('E2E Transaction Flow', () => {
                 'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({
+                org_id: orgId,
                 name: `E2E Payment Zone ${Date.now()}`,
                 mode: 'test'
             })
@@ -72,7 +89,7 @@ describe('E2E Transaction Flow', () => {
         const zoneData = await zoneRes.json() as any;
         zoneId = zoneData.id;
 
-        // 5. Generate API Key linked to this Zone
+        // 6. Generate API Key linked to this Zone
         const keyRes = await fetch('http://localhost:8080/auth/api_keys', {
             method: 'POST',
             headers: {
