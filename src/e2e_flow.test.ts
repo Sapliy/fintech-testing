@@ -24,16 +24,13 @@ describe('E2E Transaction Flow', () => {
 
     beforeAll(async () => {
         console.log('1. Registering user...');
-        const email = `e2e-payment-user-${Date.now()}@example.com`;
-        const password = 'Password123!';
-
+        const [email, password] = ['e2e-test@sapliy.io', 'Password123!'];
         const regRes = await fetch('http://localhost:8080/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
         if (!regRes.ok) throw new Error(`Register failed: ${regRes.statusText}`);
-        const _user = await regRes.json() as any;
 
         console.log('2. Getting debug token...');
         await new Promise(r => setTimeout(r, 200)); // Wait for token storage
@@ -112,33 +109,22 @@ describe('E2E Transaction Flow', () => {
     }, 60000); // 60s timeout for setup
 
     it('successfully processes a payment through the entire ecosystem', async () => {
-        try {
-            console.log('1. Triggering a Payment Event...');
-            const paymentIntentRes = await client.payments.paymentServiceCreatePaymentIntent({
-                amount: 5000,
-                currency: 'usd',
-                zone_id: zoneId,
-                description: 'E2E Test Payment'
-            } as any);
-            console.log('Payment Intent Response Data:', JSON.stringify((paymentIntentRes as any).data));
-            const paymentIntent = (paymentIntentRes as any).data;
-            expect(paymentIntent).toBeDefined();
-            const intentId = paymentIntent.id;
+        // 1. Trigger a Payment Event
+        const paymentIntentRes = await client.payments.paymentServiceCreatePaymentIntent({
+            amount: 5000,
+            currency: 'usd',
+            zone_id: zoneId,
+            description: 'E2E Test Payment'
+        } as any);
+        const paymentIntent = (paymentIntentRes as any).data;
+        expect(paymentIntent).toBeDefined();
+        const intentId = paymentIntent.id;
 
-            console.log('2. Confirming the Payment...');
-            const confirmationRes = await client.payments.paymentServiceConfirmPaymentIntent(intentId, {
-                payment_method_id: 'pm_card_visa' as any
-            } as any);
-            console.log('Confirmation Response Data:', JSON.stringify((confirmationRes as any).data));
-            const confirmation = (confirmationRes as any).data;
-            expect(confirmation.status).toBe('succeeded');
-        } catch (error: any) {
-            console.error('Test execution error:', error.message || error);
-            if (error.response) {
-                console.error('Error response data:', error.response.data);
-                console.error('Error response status:', error.response.status);
-            }
-            throw error;
-        }
+        // 2. Confirm the Payment
+        const confirmationRes = await client.payments.paymentServiceConfirmPaymentIntent(intentId, {
+            payment_method_id: 'pm_card_visa' as any
+        } as any);
+        const confirmation = (confirmationRes as any).data;
+        expect(confirmation.status).toBe('succeeded');
     });
 });
