@@ -23,7 +23,7 @@ describe('E2E Transaction Flow', () => {
     }
 
     beforeAll(async () => {
-        // 1. Register User
+        console.log('1. Registering user...');
         const email = `e2e-payment-user-${Date.now()}@example.com`;
         const password = 'Password123!';
 
@@ -35,10 +35,11 @@ describe('E2E Transaction Flow', () => {
         if (!regRes.ok) throw new Error(`Register failed: ${regRes.statusText}`);
         const _user = await regRes.json() as any;
 
-        // 2. Verify Email
+        console.log('2. Getting debug token...');
         await new Promise(r => setTimeout(r, 200)); // Wait for token storage
         const token = await getDebugToken(email, 'verify');
 
+        console.log('3. Verifying email...');
         const verifyRes = await fetch('http://localhost:8080/auth/verify-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -46,7 +47,7 @@ describe('E2E Transaction Flow', () => {
         });
         if (!verifyRes.ok) throw new Error(`Verify failed: ${verifyRes.statusText}`);
 
-        // 3. Login to get Auth Token
+        console.log('4. Logging in...');
         const loginRes = await fetch('http://localhost:8080/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -56,7 +57,7 @@ describe('E2E Transaction Flow', () => {
         const loginData = await loginRes.json() as any;
         const authToken = loginData.token;
 
-        // 4. Create Organization
+        console.log('5. Creating organization...');
         const orgRes = await fetch('http://localhost:8080/auth/organizations', {
             method: 'POST',
             headers: {
@@ -72,7 +73,7 @@ describe('E2E Transaction Flow', () => {
         const orgData = await orgRes.json() as any;
         const orgId = orgData.id;
 
-        // 5. Create Zone
+        console.log('6. Creating zone...');
         const zoneRes = await fetch('http://localhost:8080/auth/zones', {
             method: 'POST',
             headers: {
@@ -89,7 +90,7 @@ describe('E2E Transaction Flow', () => {
         const zoneData = await zoneRes.json() as any;
         zoneId = zoneData.id;
 
-        // 6. Generate API Key linked to this Zone
+        console.log('7. Generating API Key...');
         const keyRes = await fetch('http://localhost:8080/auth/api_keys', {
             method: 'POST',
             headers: {
@@ -106,27 +107,38 @@ describe('E2E Transaction Flow', () => {
         const keyData = await keyRes.json() as any;
         apiKey = keyData.key;
 
-        // Initialize Client
+        console.log('8. Initializing client...');
         client = new SapliyClient(apiKey, 'http://localhost:8080');
     }, 60000); // 60s timeout for setup
 
     it('successfully processes a payment through the entire ecosystem', async () => {
-        // 1. Trigger a Payment Event
-        const paymentIntentRes = await client.payments.paymentServiceCreatePaymentIntent({
-            amount: 5000,
-            currency: 'usd',
-            zone_id: zoneId,
-            description: 'E2E Test Payment'
-        } as any);
-        const paymentIntent = (paymentIntentRes as any).data;
-        expect(paymentIntent).toBeDefined();
-        const intentId = paymentIntent.id;
+        try {
+            console.log('1. Triggering a Payment Event...');
+            const paymentIntentRes = await client.payments.paymentServiceCreatePaymentIntent({
+                amount: 5000,
+                currency: 'usd',
+                zone_id: zoneId,
+                description: 'E2E Test Payment'
+            } as any);
+            console.log('Payment Intent Response Data:', JSON.stringify((paymentIntentRes as any).data));
+            const paymentIntent = (paymentIntentRes as any).data;
+            expect(paymentIntent).toBeDefined();
+            const intentId = paymentIntent.id;
 
-        // 2. Confirm the Payment
-        const confirmationRes = await client.payments.paymentServiceConfirmPaymentIntent(intentId, {
-            payment_method: 'pm_card_visa' as any
-        } as any);
-        const confirmation = (confirmationRes as any).data;
-        expect(confirmation.status).toBe('succeeded');
+            console.log('2. Confirming the Payment...');
+            const confirmationRes = await client.payments.paymentServiceConfirmPaymentIntent(intentId, {
+                payment_method_id: 'pm_card_visa' as any
+            } as any);
+            console.log('Confirmation Response Data:', JSON.stringify((confirmationRes as any).data));
+            const confirmation = (confirmationRes as any).data;
+            expect(confirmation.status).toBe('succeeded');
+        } catch (error: any) {
+            console.error('Test execution error:', error.message || error);
+            if (error.response) {
+                console.error('Error response data:', error.response.data);
+                console.error('Error response status:', error.response.status);
+            }
+            throw error;
+        }
     });
 });
