@@ -131,7 +131,7 @@ describe('Flow Execution E2E', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}` // Use authToken for administrative access or apiKey if scoped
+                'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify(flowData)
         });
@@ -178,7 +178,7 @@ describe('Flow Execution E2E', () => {
             const listExecsRes = await fetch(`http://localhost:8080/v1/flows/${flowId}/executions`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${authToken}`
+                    'Authorization': `Bearer ${apiKey}`
                 }
             });
             if (listExecsRes.ok) {
@@ -202,7 +202,7 @@ describe('Flow Execution E2E', () => {
             await new Promise(r => setTimeout(r, 1000));
             const getExecRes = await fetch(`http://localhost:8080/v1/executions/${execution.id}`, {
                 method: 'GET',
-                headers: { 'Authorization': `Bearer ${authToken}` }
+                headers: { 'Authorization': `Bearer ${apiKey}` }
             });
             const finalExec = await getExecRes.json() as any;
             expect(finalExec.status).toBe('completed');
