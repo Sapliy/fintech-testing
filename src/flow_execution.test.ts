@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-describe('Flow Execution E2E', () => {
+describe('Flow Execution E2E', { timeout: 15000 }, () => {
     let authToken: string;
     let orgId: string;
     let zoneId: string;

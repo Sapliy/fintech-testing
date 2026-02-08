@@ -24,7 +24,8 @@ describe('E2E Transaction Flow', () => {
 
     beforeAll(async () => {
         console.log('1. Registering user...');
-        const [email, password] = ['e2e-test@sapliy.io', 'Password123!'];
+        const email = `e2e-test-${Date.now()}@sapliy.io`;
+        const password = 'Password123!';
         const regRes = await fetch('http://localhost:8080/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
