@@ -127,7 +127,7 @@ describe('Flow Execution E2E', () => {
             ]
         };
 
-        const createFlowRes = await fetch('http://localhost:8080/flows', {
+        const createFlowRes = await fetch('http://localhost:8080/v1/flows', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
