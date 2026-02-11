@@ -183,6 +183,10 @@ describe('Approval Node E2E', { timeout: 180000 }, () => {
             body: JSON.stringify({ approved: true, notes: 'Looks good' })
         });
 
+        if (!resumeRes.ok) {
+            const errorText = await resumeRes.text();
+            console.error(`Resume failed: ${resumeRes.status} ${resumeRes.statusText} - ${errorText}`);
+        }
         expect(resumeRes.ok).toBe(true);
         const resumeData = await resumeRes.json() as any;
         expect(resumeData.message).toBe('Execution resumed');
