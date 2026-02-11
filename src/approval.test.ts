@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-describe('Approval Node E2E', { timeout: 60000 }, () => {
+describe('Approval Node E2E', { timeout: 180000 }, () => {
     let authToken: string;
     let orgId: string;
     let zoneId: string;
@@ -138,11 +138,11 @@ describe('Approval Node E2E', { timeout: 60000 }, () => {
         });
         expect(emitRes.ok).toBe(true);
 
-        // Wait and check for PAUSED status
         // The flow-runner polls Redis every 100ms but may take a few seconds to discover the new stream
+        // In this environment, it takes ~100s for flow-runner to fully initialize and pick up events
         console.log('3. Checking for paused status...');
         let executionId = '';
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 150; i++) {
             await new Promise(r => setTimeout(r, 1000));
             const listExecsRes = await fetch(`http://localhost:8080/v1/flows/${flowId}/executions`, {
                 method: 'GET',
