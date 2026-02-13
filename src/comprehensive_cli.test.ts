@@ -24,7 +24,7 @@ describe('Sapliy CLI Comprehensive Suite', () => {
             ...extraEnv
         };
         const envStr = Object.entries(envObj).map(([k, v]) => `${k}="${v}"`).join(' ');
-        const cmd = `${envStr} ${CLI_CMD} ${args}`;
+        const cmd = `${envStr} ${CLI_CMD} --verbose ${args}`;
         try {
             const result = await execAsync(cmd);
             return { stdout: result.stdout.trim(), stderr: result.stderr.trim(), error: null };
