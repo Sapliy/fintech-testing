@@ -13,13 +13,13 @@ describe('Sapliy CLI Comprehensive Suite', () => {
     let apiKey: string;
     let zoneId: string;
     let orgId: string;
-    let flowId: string;
     const email = `cli-full-test-${Date.now()}@sapliy.io`;
     const password = 'Password123!';
 
     // Helper to run CLI with environment variables
-    const runCli = async (args: string) => {
-        const cmd = `SAPLIY_API_KEY="${apiKey}" SAPLIY_API_URL="${API_URL}" ${CLI_CMD} ${args}`;
+    const runCli = async (args: string, extraEnv: Record<string, string> = {}) => {
+        const envStr = Object.entries(extraEnv).map(([k, v]) => `${k}="${v}"`).join(' ');
+        const cmd = `SAPLIY_API_KEY="${apiKey}" SAPLIY_API_URL="${API_URL}" ${envStr} ${CLI_CMD} ${args}`;
         try {
             const result = await execAsync(cmd);
             return { stdout: result.stdout.trim(), stderr: result.stderr.trim(), error: null };
@@ -93,40 +93,20 @@ describe('Sapliy CLI Comprehensive Suite', () => {
         const keyData = await keyRes.json() as any;
         apiKey = keyData.key;
         console.log('Setup complete. API Key:', apiKey);
-
-        // 7. Create a Flow for testing
-        const flowRes = await fetch(`${API_URL}/v1/flows`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                org_id: orgId,
-                zone_id: zoneId,
-                name: 'CLI Test Flow',
-                enabled: true,
-                nodes: [{ id: 'trigger', type: 'eventTrigger', data: JSON.stringify({ eventType: 'cli.test' }), position: '{"x":0,"y":0}' }],
-                edges: []
-            })
-        });
-        const flowData = await flowRes.json() as any;
-        flowId = flowData.id;
     });
 
     // --- CLI Tests ---
 
     it('should login via CLI', async () => {
         // auth login asks for API key in stdin
-        const cmd = `echo "${apiKey}" | ${CLI_CMD} auth login`;
+        const cmd = `echo "${apiKey}" | SAPLIY_API_URL="${API_URL}" ${CLI_CMD} auth login`;
         const { stdout } = await execAsync(cmd);
         expect(stdout).toContain('Successfully authenticated!');
     });
 
     it('should list zones', async () => {
         // Need org_id in config or env. CLI uses viper.GetString("org_id")
-        const cmd = `SAPLIY_ORG_ID="${orgId}" ${CLI_CMD} zones list`;
-        const { stdout } = await execAsync(cmd);
+        const { stdout } = await runCli(`zones list`, { SAPLIY_ORG_ID: orgId });
         console.log('zones list:', stdout);
         expect(stdout).toContain(zoneId);
         expect(stdout).toContain('CLI Full Test Zone');
@@ -134,8 +114,7 @@ describe('Sapliy CLI Comprehensive Suite', () => {
 
     it('should create a new zone via CLI', async () => {
         const zoneName = `cli-zone-${Date.now()}`;
-        const cmd = `SAPLIY_ORG_ID="${orgId}" ${CLI_CMD} zones create -n ${zoneName} -m test`;
-        const { stdout } = await execAsync(cmd);
+        const { stdout } = await runCli(`zones create -n ${zoneName} -m test`, { SAPLIY_ORG_ID: orgId });
         console.log('zones create:', stdout);
         expect(stdout).toContain('Zone created successfully!');
     });
