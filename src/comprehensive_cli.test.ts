@@ -18,8 +18,13 @@ describe('Sapliy CLI Comprehensive Suite', () => {
 
     // Helper to run CLI with environment variables
     const runCli = async (args: string, extraEnv: Record<string, string> = {}) => {
-        const envStr = Object.entries(extraEnv).map(([k, v]) => `${k}="${v}"`).join(' ');
-        const cmd = `SAPLIY_API_KEY="${apiKey}" SAPLIY_API_URL="${API_URL}" ${envStr} ${CLI_CMD} ${args}`;
+        const envObj = {
+            SAPLIY_API_KEY: apiKey,
+            SAPLIY_API_URL: API_URL,
+            ...extraEnv
+        };
+        const envStr = Object.entries(envObj).map(([k, v]) => `${k}="${v}"`).join(' ');
+        const cmd = `${envStr} ${CLI_CMD} ${args}`;
         try {
             const result = await execAsync(cmd);
             return { stdout: result.stdout.trim(), stderr: result.stderr.trim(), error: null };
