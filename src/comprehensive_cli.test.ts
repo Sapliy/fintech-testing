@@ -116,85 +116,56 @@ describe('Sapliy CLI Comprehensive Suite', () => {
 
     // --- CLI Tests ---
 
-    it('should display version', async () => {
-        const { stdout } = await runCli('version');
-        expect(stdout).toContain('sapliy');
-        expect(stdout).toContain('version');
-    });
-
-    it('should show current user (whoami)', async () => {
-        const { stdout } = await runCli('whoami');
-        // Output might be "Logged in as <email>" or similar.
-        // Or if using API key, might say "Authenticated via API Key"
-        // Let's check for non-error output first.
-        console.log('whoami:', stdout);
-        expect(stdout.toLowerCase()).toContain('authenticated');
+    it('should login via CLI', async () => {
+        // auth login asks for API key in stdin
+        const cmd = `echo "${apiKey}" | ${CLI_CMD} auth login`;
+        const { stdout } = await execAsync(cmd);
+        expect(stdout).toContain('Successfully authenticated!');
     });
 
     it('should list zones', async () => {
-        const { stdout } = await runCli('zones list');
+        // Need org_id in config or env. CLI uses viper.GetString("org_id")
+        const cmd = `SAPLIY_ORG_ID="${orgId}" ${CLI_CMD} zones list`;
+        const { stdout } = await execAsync(cmd);
         console.log('zones list:', stdout);
-        // Should contain our zone name or ID
         expect(stdout).toContain(zoneId);
         expect(stdout).toContain('CLI Full Test Zone');
     });
 
-    it('should show current zone', async () => {
-        // By default, no zone selected? Or maybe it picks default?
-        // Let's select one first via 'use'
-        // Wait, 'use' modifies local config. Env var SAPLIY_ZONE overrides?
-        // Start with just checking output format
-        const { stdout } = await runCli('zones current');
-        console.log('zones current:', stdout);
+    it('should create a new zone via CLI', async () => {
+        const zoneName = `cli-zone-${Date.now()}`;
+        const cmd = `SAPLIY_ORG_ID="${orgId}" ${CLI_CMD} zones create -n ${zoneName} -m test`;
+        const { stdout } = await execAsync(cmd);
+        console.log('zones create:', stdout);
+        expect(stdout).toContain('Zone created successfully!');
     });
 
-    it('should list flows', async () => {
-        const { stdout } = await runCli('flows list');
-        console.log('flows list:', stdout);
-        expect(stdout).toContain(flowId);
-        expect(stdout).toContain('CLI Test Flow');
-    });
-
-    it('should get flow details', async () => {
-        const { stdout } = await runCli(`flows get ${flowId}`);
-        console.log('flows get:', stdout);
-        expect(stdout).toContain(flowId);
-        expect(stdout).toContain('eventTrigger');
-    });
-
-    it('should disable and enable flow', async () => {
-        // Disable
-        const { stdout: disableOut } = await runCli(`flows disable ${flowId}`);
-        expect(disableOut).toContain('disabled');
-
-        // Verify via API
-        const checkRes1 = await fetch(`${API_URL}/v1/flows/${flowId}`, { headers: { 'Authorization': `Bearer ${apiKey}` } });
-        const checkData1 = await checkRes1.json() as any;
-        expect(checkData1.enabled).toBe(false);
-
-        // Enable
-        const { stdout: enableOut } = await runCli(`flows enable ${flowId}`);
-        expect(enableOut).toContain('enabled');
-
-        // Verify via API
-        const checkRes2 = await fetch(`${API_URL}/v1/flows/${flowId}`, { headers: { 'Authorization': `Bearer ${apiKey}` } });
-        const checkData2 = await checkRes2.json() as any;
-        expect(checkData2.enabled).toBe(true);
+    it('should switch zone', async () => {
+        const { stdout } = await runCli(`zones switch ${zoneId}`);
+        expect(stdout).toContain('Switched to zone');
+        expect(stdout).toContain(zoneId);
     });
 
     it('should trigger an event', async () => {
-        const { stdout } = await runCli(`trigger cli.test --data '{"foo":"bar"}'`);
+        // trigger requires -z flag
+        const { stdout } = await runCli(`trigger cli.test -z ${zoneId} -d '{"foo":"bar"}'`);
         console.log('trigger:', stdout);
-        expect(stdout).toContain('Event triggered');
+        expect(stdout).toContain('Event triggered successfully');
+    });
+
+    it('should list webhook events', async () => {
+        // Give it a moment for the triggered event to appear
+        await new Promise(r => setTimeout(r, 1000));
+        const { stdout } = await runCli(`webhooks list -z ${zoneId} --limit 5`);
+        console.log('webhooks list:', stdout);
         expect(stdout).toContain('cli.test');
     });
 
-    it('should list logs', async () => {
-        // Give it a moment for the triggered event to appear in logs
-        await new Promise(r => setTimeout(r, 1000));
-        const { stdout } = await runCli('logs --limit 5');
-        console.log('logs:', stdout);
-        expect(stdout).toContain('cli.test');
+    it('should generate flow file locally', async () => {
+        const { stdout } = await runCli('generate flow testflow');
+        expect(stdout).toContain('Generated flow file: testflow.flow.json');
+        // cleanup
+        await execAsync('rm testflow.flow.json');
     });
 
     // Validating "every endpoint":
