@@ -32,8 +32,9 @@ describe('Gateway Public Routes E2E', () => {
             body: JSON.stringify({ email: 'nonexistent@test.com', password: 'wrong' })
         });
         // Should fail with bad credentials, not with auth required
-        expect(res.status).not.toBe(401);
-        expect(res.status).not.toBe(403);
+        expect(res.status).toBe(401);
+        const data = await res.json() as any;
+        expect(data.error.message).toContain('email or password');
         console.log(`Login route accessible: status ${res.status}`);
     });
 
@@ -44,8 +45,8 @@ describe('Gateway Public Routes E2E', () => {
         });
         expect(res.status).toBe(401);
         const data = await res.json() as any;
-        expect(data.error).toContain('API Key');
-        console.log(`Protected route correctly rejected: ${data.error}`);
+        expect(data.error.message).toContain('API Key');
+        console.log(`Protected route correctly rejected: ${data.error.message}`);
     });
 
     it('should reject invalid API key format', async () => {
@@ -57,6 +58,8 @@ describe('Gateway Public Routes E2E', () => {
             }
         });
         expect(res.status).toBe(401);
+        const data = await res.json() as any;
+        expect(data.error.message).toContain('API Key');
         console.log('Invalid key format correctly rejected');
     });
 
@@ -69,6 +72,8 @@ describe('Gateway Public Routes E2E', () => {
             }
         });
         expect(res.status).toBe(401);
+        const data = await res.json() as any;
+        expect(data.error.message).toContain('API Key');
         console.log('Non-existent key correctly rejected');
     });
 });

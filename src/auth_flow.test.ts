@@ -28,8 +28,8 @@ describe('Authentication Flow', () => {
             body: JSON.stringify({ email, password })
         });
         expect(registerRes.status).toBe(201);
-        const user = await registerRes.json() as any;
-        expect(user.email).toBe(email);
+        const data = await registerRes.json() as any;
+        expect(data.user.email).toBe(email);
 
         // 2. Get Verification Token (Debug)
         // Wait a bit for async processing (Redis write)
