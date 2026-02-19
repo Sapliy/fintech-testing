@@ -32,7 +32,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sapliyio/fintech": "^1.0.0",
+    "@sapliyio/fintech": "^1.1.0",
     "msw": "^2.2.0"
   },
   "devDependencies": {
@@ -42,9 +42,6 @@
     "typescript": "^5.3.3",
     "vitest": "^1.2.0",
     "ws": "^8.19.0"
-  },
-  "peerDependencies": {
-    "@sapliyio/fintech": "^1.0.0"
   },
   "peerDependenciesMeta": {
     "@sapliyio/fintech": {

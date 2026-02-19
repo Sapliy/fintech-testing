@@ -106,25 +106,24 @@ describe('E2E Transaction Flow', () => {
         apiKey = keyData.key;
 
         console.log('8. Initializing client...');
-        client = new SapliyClient(apiKey, 'http://localhost:8080');
+        client = new SapliyClient(apiKey, { basePath: 'http://localhost:8080' });
     }, 60000); // 60s timeout for setup
 
     it('successfully processes a payment through the entire ecosystem', async () => {
         // 1. Trigger a Payment Event
-        const paymentIntentRes = await client.payments.paymentServiceCreatePaymentIntent({
+        const paymentIntentRes = await client.payments.createPaymentIntent(zoneId, {
             amount: 5000,
             currency: 'usd',
-            zone_id: zoneId,
             description: 'E2E Test Payment'
-        } as any);
+        });
         const paymentIntent = (paymentIntentRes as any).data;
         expect(paymentIntent).toBeDefined();
         const intentId = paymentIntent.id;
 
         // 2. Confirm the Payment
-        const confirmationRes = await client.payments.paymentServiceConfirmPaymentIntent(intentId, {
-            payment_method_id: 'pm_card_visa' as any
-        } as any);
+        const confirmationRes = await client.payments.confirmPaymentIntent(intentId, zoneId, 'test', {
+            payment_method_id: 'pm_card_visa'
+        });
         const confirmation = (confirmationRes as any).data;
         expect(confirmation.status).toBe('succeeded');
     });
