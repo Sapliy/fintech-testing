@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, beforeAll } from 'vitest';
 
 // WebSocket import for Node.js environment
 import WebSocket from 'ws';
@@ -78,9 +78,9 @@ describe('WebSocket Event Streaming E2E', () => {
     it('should connect to WebSocket endpoint with API key', async () => {
         console.log('1. Connecting to WebSocket...');
 
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, _reject) => {
             const timeout = setTimeout(() => {
-                reject(new Error('WebSocket connection timeout'));
+                _reject(new Error('WebSocket connection timeout'));
             }, 5000);
 
             try {
@@ -116,7 +116,7 @@ describe('WebSocket Event Streaming E2E', () => {
     it('should receive events via WebSocket when emitted', async () => {
         console.log('2. Testing event reception via WebSocket...');
 
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, _reject) => {
             const timeout = setTimeout(() => {
                 console.log('WebSocket event reception test timed out (expected if not implemented)');
                 resolve(); // Pass - feature may not be fully implemented

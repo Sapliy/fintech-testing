@@ -6,7 +6,8 @@ import { SapliyClient } from "@sapliyio/fintech";
  * Simulates concurrent traffic to basic endpoints to benchmark performance.
  */
 export async function runLoadTest(concurrency: number, durationSeconds: number) {
-    const client = new SapliyClient({ apiKey: 'sk_test_load_test', base_url: 'http://localhost:8080' });
+    const client = new SapliyClient('sk_test_load_test', { basePath: 'http://localhost:8080' });
+    void client;
     const endTime = Date.now() + durationSeconds * 1000;
 
     let totalRequests = 0;

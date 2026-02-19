@@ -1,5 +1,6 @@
 import { SapliyClient } from "@sapliyio/fintech"
 import { describe, it, expect } from 'vitest';
+import { getDebugToken } from './utils/e2e-helpers';
 
 /**
  * Auth Flow E2E Test
@@ -12,18 +13,9 @@ import { describe, it, expect } from 'vitest';
  */
 describe('Authentication Flow', () => {
     // Client for Gateway (Public API)
-    // The constructor takes apiKey as first arg and basePath as second
-    const _client = new SapliyClient('pk_test_public_key', 'http://localhost:8080');
-
-    // Helper to fetch debug tokens from Auth Service directly
-    async function getDebugToken(email: string, type: 'verify' | 'reset'): Promise<string> {
-        const res = await fetch(`http://localhost:8081/debug/tokens?email=${email}&type=${type}`);
-        if (!res.ok) {
-            throw new Error(`Failed to get debug token: ${res.status} ${res.statusText}`);
-        }
-        const data = await res.json() as any;
-        return data.token;
-    }
+    // _client is kept for documentation of public access but marked as internal
+    const _client = new SapliyClient('pk_test_public_key', { basePath: 'http://localhost:8080' });
+    void _client;
 
     it('should register, verify email, and login successfully', async () => {
         const email = `test-user-${Date.now()}@example.com`;
@@ -64,7 +56,8 @@ describe('Authentication Flow', () => {
         expect(loginData.token).toBeDefined();
 
         // Verify we can access protected resource (e.g., list zones)
-        const _authenticatedClient = new SapliyClient(loginData.token, 'http://localhost:8080');
+        const authenticatedClient = new SapliyClient(loginData.token, { basePath: 'http://localhost:8080' });
+        expect(authenticatedClient).toBeDefined();
     });
 
     it('should reset password successfully', async () => {
