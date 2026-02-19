@@ -172,7 +172,7 @@ describe('Zone Management E2E', () => {
             },
             body: JSON.stringify({ name: 'Isolation Zone 2', org_id: orgId, mode: 'test' })
         });
-        const _zone2 = await zone2Res.json() as any;
+        await zone2Res.json();
 
         // Generate key for zone1
         const key1Res = await fetch('http://localhost:8080/auth/api_keys', {
