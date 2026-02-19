@@ -32,7 +32,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sapliyio/fintech": "^1.1.0",
+    "@sapliyio/fintech": "file:../fintech-sdk-node",
     "msw": "^2.2.0"
   },
   "devDependencies": {
