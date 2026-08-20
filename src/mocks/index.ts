@@ -1,12 +1,13 @@
 import { setupServer } from 'msw/node';
 import { beforeAll, afterEach, afterAll } from 'vitest';
 import { allHandlers } from './handlers';
+import { playbookHandlers } from './playbookHandlers';
 
 /**
  * Create a mock server for testing
  * Use in Node.js test environments (Jest, Vitest, etc.)
  */
-export const server = setupServer(...allHandlers);
+export const server = setupServer(...allHandlers, ...playbookHandlers);
 
 /**
  * Setup function for test suites
@@ -19,3 +20,4 @@ export function setupTestServer() {
 }
 
 export * from './handlers';
+export * from './playbookHandlers';

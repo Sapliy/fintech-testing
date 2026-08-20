@@ -4,7 +4,7 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-const CLI_PATH = '/Users/marwanhassan/Sapliy-fintech/sapliy-cli';
+const CLI_PATH = process.env.SAPLIY_CLI_PATH || '/Users/marwanhassan/Sapliy/repos/sapliy-cli';
 const API_URL = 'http://localhost:8080';
 
 describe('Sapliy CLI E2E', () => {

@@ -1,5 +1,5 @@
 /**
- * Sapliy Fintech Testing Utilities
+ * Sapliy Testing Utilities
  * Mock servers, fixtures, and assertion helpers for SDK and integration testing
  */
 

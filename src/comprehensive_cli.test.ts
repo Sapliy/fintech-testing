@@ -5,7 +5,7 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 // Path to the built CLI binary
-const CLI_PATH = '/Users/marwanhassan/Sapliy-fintech/sapliy-cli';
+const CLI_PATH = process.env.SAPLIY_CLI_PATH || '/Users/marwanhassan/Sapliy/repos/sapliy-cli';
 const CLI_CMD = `${CLI_PATH}/sapliy`;
 const API_URL = 'http://localhost:8080';
 
